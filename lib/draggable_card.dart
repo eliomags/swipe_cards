@@ -5,13 +5,13 @@ import 'package:flutter/material.dart';
 
 enum SlideDirection { left, right, up }
 
-enum SlideRegion { inNopeRegion, inLikeRegion, inSuperLikeRegion }
+enum SlideRegion { inNopeRegion, inLikeRegion, inSkipRegion }
 
 class DraggableCard extends StatefulWidget {
   final Widget? card;
   final Widget? likeTag;
   final Widget? nopeTag;
-  final Widget? superLikeTag;
+  final Widget? skipTag;
   final bool isDraggable;
   final SlideDirection? slideTo;
   final Function(double distance)? onSlideUpdate;
@@ -27,7 +27,7 @@ class DraggableCard extends StatefulWidget {
       {this.card,
       this.likeTag,
       this.nopeTag,
-      this.superLikeTag,
+      this.skipTag,
       this.isDraggable = true,
       this.onSlideUpdate,
       this.onSlideOutComplete,
@@ -215,7 +215,7 @@ class _DraggableCardState extends State<DraggableCard>
             ? SlideRegion.inNopeRegion
             : SlideRegion.inLikeRegion;
       } else if (isInTopRegion) {
-        slideRegion = SlideRegion.inSuperLikeRegion;
+        slideRegion = SlideRegion.inSkipRegion;
       } else {
         slideRegion = null;
       }
@@ -357,11 +357,11 @@ class _DraggableCardState extends State<DraggableCard>
                           child: widget.nopeTag,
                         ),
                       ),
-                    if (widget.superLikeTag != null &&
-                        slideRegion == SlideRegion.inSuperLikeRegion)
+                    if (widget.skipTag != null &&
+                        slideRegion == SlideRegion.inSkipRegion)
                       Align(
                         alignment: Alignment.bottomCenter,
-                        child: widget.superLikeTag,
+                        child: widget.skipTag,
                       ),
                   ],
                 )

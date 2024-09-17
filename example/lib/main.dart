@@ -73,9 +73,9 @@ class _MyHomePageState extends State<MyHomePage> {
               duration: Duration(milliseconds: 500),
             ));
           },
-          superlikeAction: () {
+          skipAction: () {
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-              content: Text("Superliked ${_names[i]}"),
+              content: Text("Skipped ${_names[i]}"),
               duration: Duration(milliseconds: 500),
             ));
           },
@@ -140,13 +140,13 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
                 child: Text('Nope'),
               ),
-              superLikeTag: Container(
+              skipTag: Container(
                 margin: const EdgeInsets.all(15.0),
                 padding: const EdgeInsets.all(3.0),
                 decoration: BoxDecoration(
                     border: Border.all(color: Colors.orange)
                 ),
-                child: Text('Super Like'),
+                child: Text('Skip'),
               ),
             ),
           ),
@@ -162,9 +162,9 @@ class _MyHomePageState extends State<MyHomePage> {
                     child: Text("Nope")),
                 ElevatedButton(
                     onPressed: () {
-                      _matchEngine!.currentItem?.superLike();
+                      _matchEngine!.currentItem?.skip();
                     },
-                    child: Text("Superlike")),
+                    child: Text("Skip")),
                 ElevatedButton(
                     onPressed: () {
                       _matchEngine!.currentItem?.like();

@@ -78,7 +78,7 @@ SwipeItem(
             nopeAction: () {
                 log("Nope");
             },
-            superlikeAction: () {
+            skipAction: () {
                 log("Superlike");
             },
             onSlideUpdate: (SlideRegion? region){
@@ -94,7 +94,7 @@ SwipeItem(
 | `content`    | An object that contains the actual data to be rendered in the swipe card.    |
 | `likeAction`     |  A function that is triggered when the card is liked.                    |
 | `nopeAction` |  A function that is triggered when the card is not liked / swiped left.    |
-| `superlikeAction` |  A function that is triggered when the card is superliked.    |
+| `skipAction` |  A function that is triggered when the card is superliked.    |
 | `onSlideUpdate` |  A function that is triggered when the card is being dragged and tells about the current region of the card.    |
 
 ### Example
@@ -129,7 +129,7 @@ List<SwipeItem> _swipeItems = List<SwipeItem>();
               duration: Duration(milliseconds: 500),
             ));
           },
-          superlikeAction: () {
+          skipAction: () {
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
               content: Text("Superliked ${_names[i]}"),
               duration: Duration(milliseconds: 500),
