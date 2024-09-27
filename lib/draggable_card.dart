@@ -11,6 +11,7 @@ class DraggableCard extends StatefulWidget {
   final Widget? likeTag;
   final Widget? nopeTag;
   final Widget? skipTag;
+  final Widget? backTag;  // Add this line
   final bool isDraggable;
   final SlideDirection? slideTo;
   final Function(double distance)? onSlideUpdate;
@@ -38,6 +39,7 @@ class DraggableCard extends StatefulWidget {
     this.rightSwipeAllowed = true,
     this.downSwipeAllowed = false, // Enabled down swipe by default
     this.isBackCard = false,
+    this.backTag,  // Add this line
     this.padding = EdgeInsets.zero,
   });
 
@@ -389,6 +391,12 @@ class _DraggableCardState extends State<DraggableCard> with TickerProviderStateM
                       Align(
                         alignment: Alignment.bottomCenter,
                         child: widget.skipTag,
+                      ),
+                    if (widget.backTag != null &&
+                        slideRegion == SlideRegion.inBackRegion)
+                      Align(
+                        alignment: Alignment.topCenter,
+                        child: widget.backTag,
                       ),
                   ],
                 )
