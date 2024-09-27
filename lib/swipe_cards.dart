@@ -17,6 +17,7 @@ class SwipeCards extends StatefulWidget {
   final bool upSwipeAllowed;
   final bool leftSwipeAllowed;
   final bool rightSwipeAllowed;
+  final bool downSwipeAllowed; // Added for backward motion
 
   SwipeCards({
     Key? key,
@@ -30,6 +31,7 @@ class SwipeCards extends StatefulWidget {
     this.upSwipeAllowed = false,
     this.leftSwipeAllowed = true,
     this.rightSwipeAllowed = true,
+    this.downSwipeAllowed = true, // Default to true for backward motion
     this.itemChanged,
   }) : super(key: key);
 
@@ -97,7 +99,7 @@ class _SwipeCardsState extends State<SwipeCards> {
 
   void _onMatchChange() {
     setState(() {
-      //match has been changed
+      // match has been changed
     });
   }
 
@@ -146,6 +148,9 @@ class _SwipeCardsState extends State<SwipeCards> {
       case SlideDirection.up:
         currentMatch?.skip();
         break;
+      case SlideDirection.down: // Added backward motion handling
+        widget.matchEngine.rewindMatch(); // Bring back previous card
+        break;
       case null:
         break;
     }
@@ -187,6 +192,7 @@ class _SwipeCardsState extends State<SwipeCards> {
             upSwipeAllowed: widget.upSwipeAllowed,
             leftSwipeAllowed: widget.leftSwipeAllowed,
             rightSwipeAllowed: widget.rightSwipeAllowed,
+            downSwipeAllowed: widget.downSwipeAllowed, // Allow backward motion
             isBackCard: true,
           ),
         if (widget.matchEngine.currentItem != null)
@@ -202,6 +208,7 @@ class _SwipeCardsState extends State<SwipeCards> {
             upSwipeAllowed: widget.upSwipeAllowed,
             leftSwipeAllowed: widget.leftSwipeAllowed,
             rightSwipeAllowed: widget.rightSwipeAllowed,
+            downSwipeAllowed: widget.downSwipeAllowed, // Enable backward motion
             isBackCard: false,
           )
       ],
@@ -213,6 +220,7 @@ class MatchEngine extends ChangeNotifier {
   final List<SwipeItem>? _swipeItems;
   int? _currentItemIndex;
   int? _nextItemIndex;
+  final List<int> _previousIndices = []; // To track swiped cards for rewind
 
   MatchEngine({
     List<SwipeItem>? swipeItems,
@@ -232,6 +240,7 @@ class MatchEngine extends ChangeNotifier {
   void cycleMatch() {
     if (currentItem!.decision != Decision.undecided) {
       currentItem!.resetMatch();
+      _previousIndices.add(_currentItemIndex!); // Store current index for backward motion
       _currentItemIndex = _nextItemIndex;
       _nextItemIndex = _nextItemIndex! + 1;
       notifyListeners();
@@ -239,15 +248,16 @@ class MatchEngine extends ChangeNotifier {
   }
 
   void rewindMatch() {
-    if (_currentItemIndex != 0) {
+    if (_previousIndices.isNotEmpty) {
       currentItem!.resetMatch();
       _nextItemIndex = _currentItemIndex;
-      _currentItemIndex = _currentItemIndex! - 1;
+      _currentItemIndex = _previousIndices.removeLast(); // Bring back the last swiped card
       currentItem!.resetMatch();
       notifyListeners();
     }
   }
 }
+
 
 class SwipeItem extends ChangeNotifier {
   final dynamic content;

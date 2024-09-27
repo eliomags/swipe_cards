@@ -1,11 +1,10 @@
 import 'dart:async';
 import 'dart:math';
-
 import 'package:flutter/material.dart';
 
-enum SlideDirection { left, right, up }
+enum SlideDirection { left, right, up, down } // Added down for backward motion
 
-enum SlideRegion { inNopeRegion, inLikeRegion, inSkipRegion }
+enum SlideRegion { inNopeRegion, inLikeRegion, inSkipRegion, inBackRegion }
 
 class DraggableCard extends StatefulWidget {
   final Widget? card;
@@ -20,31 +19,33 @@ class DraggableCard extends StatefulWidget {
   final bool upSwipeAllowed;
   final bool leftSwipeAllowed;
   final bool rightSwipeAllowed;
+  final bool downSwipeAllowed; // Added support for backward motion
   final EdgeInsets padding;
   final bool isBackCard;
 
-  DraggableCard(
-      {this.card,
-      this.likeTag,
-      this.nopeTag,
-      this.skipTag,
-      this.isDraggable = true,
-      this.onSlideUpdate,
-      this.onSlideOutComplete,
-      this.slideTo,
-      this.onSlideRegionUpdate,
-      this.upSwipeAllowed = false,
-      this.leftSwipeAllowed = true,
-      this.rightSwipeAllowed = true,
-      this.isBackCard = false,
-      this.padding = EdgeInsets.zero});
+  DraggableCard({
+    this.card,
+    this.likeTag,
+    this.nopeTag,
+    this.skipTag,
+    this.isDraggable = true,
+    this.onSlideUpdate,
+    this.onSlideOutComplete,
+    this.slideTo,
+    this.onSlideRegionUpdate,
+    this.upSwipeAllowed = false,
+    this.leftSwipeAllowed = true,
+    this.rightSwipeAllowed = true,
+    this.downSwipeAllowed = true, // Enabled down swipe by default
+    this.isBackCard = false,
+    this.padding = EdgeInsets.zero,
+  });
 
   @override
   _DraggableCardState createState() => _DraggableCardState();
 }
 
-class _DraggableCardState extends State<DraggableCard>
-    with TickerProviderStateMixin {
+class _DraggableCardState extends State<DraggableCard> with TickerProviderStateMixin {
   GlobalKey profileCardKey = GlobalKey(debugLabel: 'profile_card_key');
   Offset? cardOffset = const Offset(0.0, 0.0);
   Offset? dragStart;
@@ -76,11 +77,11 @@ class _DraggableCardState extends State<DraggableCard>
               Curves.elasticOut.transform(slideBackAnimation.value),
             );
 
-            if (null != widget.onSlideUpdate) {
+            if (widget.onSlideUpdate != null) {
               widget.onSlideUpdate!(cardOffset!.distance);
             }
 
-            if (null != widget.onSlideRegionUpdate) {
+            if (widget.onSlideRegionUpdate != null) {
               widget.onSlideRegionUpdate!(slideRegion);
             }
           }))
@@ -102,11 +103,11 @@ class _DraggableCardState extends State<DraggableCard>
         setState(() {
           cardOffset = slideOutTween!.evaluate(slideOutAnimation);
 
-          if (null != widget.onSlideUpdate) {
+          if (widget.onSlideUpdate != null) {
             widget.onSlideUpdate!(cardOffset!.distance);
           }
 
-          if (null != widget.onSlideRegionUpdate) {
+          if (widget.onSlideRegionUpdate != null) {
             widget.onSlideRegionUpdate!(slideRegion);
           }
         });
@@ -144,6 +145,9 @@ class _DraggableCardState extends State<DraggableCard>
           break;
         case SlideDirection.up:
           _slideUp();
+          break;
+        case SlideDirection.down:
+          _slideDown(); // Trigger backward motion
           break;
       }
     }
@@ -196,6 +200,16 @@ class _DraggableCardState extends State<DraggableCard>
     });
   }
 
+  void _slideDown() async {
+    await Future.delayed(Duration(milliseconds: 1)).then((_) {
+      final screenHeight = context.size!.height;
+      dragStart = _chooseRandomDragStart();
+      slideOutTween = Tween(
+          begin: const Offset(0.0, 0.0), end: Offset(0.0, 2 * screenHeight));
+      slideOutAnimation.forward(from: 0.0);
+    });
+  }
+
   void _onPanStart(DragStartDetails details) {
     dragStart = details.globalPosition;
 
@@ -208,6 +222,7 @@ class _DraggableCardState extends State<DraggableCard>
     final isInLeftRegion = (cardOffset!.dx / context.size!.width) < -0.45;
     final isInRightRegion = (cardOffset!.dx / context.size!.width) > 0.45;
     final isInTopRegion = (cardOffset!.dy / context.size!.height) < -0.40;
+    final isInBottomRegion = (cardOffset!.dy / context.size!.height) > 0.40; // Added bottom region check
 
     setState(() {
       if (isInLeftRegion || isInRightRegion) {
@@ -216,6 +231,8 @@ class _DraggableCardState extends State<DraggableCard>
             : SlideRegion.inLikeRegion;
       } else if (isInTopRegion) {
         slideRegion = SlideRegion.inSkipRegion;
+      } else if (isInBottomRegion) {
+        slideRegion = SlideRegion.inBackRegion; // Added back region
       } else {
         slideRegion = null;
       }
@@ -223,11 +240,11 @@ class _DraggableCardState extends State<DraggableCard>
       dragPosition = details.globalPosition;
       cardOffset = dragPosition! - dragStart!;
 
-      if (null != widget.onSlideUpdate) {
+      if (widget.onSlideUpdate != null) {
         widget.onSlideUpdate!(cardOffset!.distance);
       }
 
-      if (null != widget.onSlideRegionUpdate) {
+      if (widget.onSlideRegionUpdate != null) {
         widget.onSlideRegionUpdate!(slideRegion);
       }
     });
@@ -239,6 +256,7 @@ class _DraggableCardState extends State<DraggableCard>
     final isInLeftRegion = (cardOffset!.dx / context.size!.width) < -0.15;
     final isInRightRegion = (cardOffset!.dx / context.size!.width) > 0.15;
     final isInTopRegion = (cardOffset!.dy / context.size!.height) < -0.15;
+    final isInBottomRegion = (cardOffset!.dy / context.size!.height) > 0.15; // Added bottom region check
 
     setState(() {
       if (isInLeftRegion) {
@@ -274,13 +292,24 @@ class _DraggableCardState extends State<DraggableCard>
           slideBackStart = cardOffset;
           slideBackAnimation.forward(from: 0.0);
         }
+      } else if (isInBottomRegion) {
+        if (widget.downSwipeAllowed) {
+          slideOutTween = Tween(
+              begin: cardOffset, end: dragVector * (2 * context.size!.height));
+          slideOutAnimation.forward(from: 0.0);
+
+          slideOutDirection = SlideDirection.down; // Trigger backward motion
+        } else {
+          slideBackStart = cardOffset;
+          slideBackAnimation.forward(from: 0.0);
+        }
       } else {
         slideBackStart = cardOffset;
         slideBackAnimation.forward(from: 0.0);
       }
 
       slideRegion = null;
-      if (null != widget.onSlideRegionUpdate) {
+      if (widget.onSlideRegionUpdate != null) {
         widget.onSlideRegionUpdate!(slideRegion);
       }
     });
@@ -312,8 +341,6 @@ class _DraggableCardState extends State<DraggableCard>
       _initAnchor();
     }
 
-    //Disables dragging card while slide out animation is in progress. Solves
-    // issue that fast swipes cause the back card not loading
     if (widget.isBackCard &&
         anchorBounds != null &&
         cardOffset!.dx < anchorBounds!.height) {
@@ -377,7 +404,7 @@ class _DraggableCardState extends State<DraggableCard>
     topLeft = box!.size.topLeft(box!.localToGlobal(const Offset(0.0, 0.0)));
     bottomRight =
         box!.size.bottomRight(box!.localToGlobal(const Offset(0.0, 0.0)));
-    anchorBounds = new Rect.fromLTRB(
+    anchorBounds = Rect.fromLTRB(
       topLeft.dx,
       topLeft.dy,
       bottomRight.dx,
