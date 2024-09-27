@@ -123,6 +123,7 @@ class _MyHomePageState extends State<MyHomePage> {
               leftSwipeAllowed: true,
               rightSwipeAllowed: true,
               upSwipeAllowed: true,
+              downSwipeAllowed: true,
               fillSpace: true,
               likeTag: Container(
                 margin: const EdgeInsets.all(15.0),
@@ -147,6 +148,21 @@ class _MyHomePageState extends State<MyHomePage> {
                     border: Border.all(color: Colors.orange)
                 ),
                 child: Text('Skip'),
+              ),
+              backTag: Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.blue,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  'BACK',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ),
           ),

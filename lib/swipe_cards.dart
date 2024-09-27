@@ -267,6 +267,7 @@ class SwipeItem extends ChangeNotifier {
   final Function? likeAction;
   final Function? skipAction;
   final Function? nopeAction;
+  final Function? backAction;  // Add this line
   final Future Function(SlideRegion? slideRegion)? onSlideUpdate;
   Decision decision = Decision.undecided;
 
@@ -275,8 +276,19 @@ class SwipeItem extends ChangeNotifier {
     this.likeAction,
     this.skipAction,
     this.nopeAction,
+    this.backAction,  // Add this line
     this.onSlideUpdate,
   });
+
+  void back() {
+    if (decision == Decision.undecided) {
+      decision = Decision.back;  // You might need to add a 'back' option to your Decision enum
+      try {
+        backAction?.call();
+      } catch (e) {}
+      notifyListeners();
+    }
+  }
 
   void slideUpdateAction(SlideRegion? slideRegion) async {
     try {
@@ -323,4 +335,4 @@ class SwipeItem extends ChangeNotifier {
   }
 }
 
-enum Decision { undecided, nope, like, skip }
+enum Decision { undecided, nope, like, skip, back }
