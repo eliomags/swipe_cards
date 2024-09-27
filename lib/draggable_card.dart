@@ -36,7 +36,7 @@ class DraggableCard extends StatefulWidget {
     this.upSwipeAllowed = false,
     this.leftSwipeAllowed = true,
     this.rightSwipeAllowed = true,
-    this.downSwipeAllowed = true, // Enabled down swipe by default
+    this.downSwipeAllowed = false, // Enabled down swipe by default
     this.isBackCard = false,
     this.padding = EdgeInsets.zero,
   });

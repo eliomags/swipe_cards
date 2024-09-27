@@ -31,7 +31,7 @@ class SwipeCards extends StatefulWidget {
     this.upSwipeAllowed = false,
     this.leftSwipeAllowed = true,
     this.rightSwipeAllowed = true,
-    this.downSwipeAllowed = true, // Default to true for backward motion
+    this.downSwipeAllowed = false, // Default to true for backward motion
     this.itemChanged,
   }) : super(key: key);
 
